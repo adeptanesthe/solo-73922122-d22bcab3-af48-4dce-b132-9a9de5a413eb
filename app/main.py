@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from .calibration import (
     BoardSpec,
+    CalibrationCache,
     CalibrationOutcome,
     CameraParams,
     CandidateResult,
@@ -73,12 +74,15 @@ class Store:
         self.session_id: Optional[str] = None
         self.raw: Optional[dict] = None
         self.last_success: Optional[dict] = None
+        # 与阈值无关的标定解算缓存，按输入内容寻址；换批时清空
+        self.cache = CalibrationCache(max_entries=16)
 
     def reset_with(self, raw: dict) -> None:
-        # 新一批数据：清掉上一批的成功结果
+        # 新一批数据：清掉上一批的成功结果与解算缓存
         self.session_id = uuid.uuid4().hex[:12]
         self.raw = raw
         self.last_success = None
+        self.cache.clear()
 
 
 STORE = Store()
@@ -270,6 +274,8 @@ def calibrate(req: CalibrateRequest) -> JSONResponse:
             payload.selected_pair_ids,
             payload.pixel_threshold,
             image_size,
+            cache=STORE.cache,
+            cache_seed=STORE.session_id,
         )
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
