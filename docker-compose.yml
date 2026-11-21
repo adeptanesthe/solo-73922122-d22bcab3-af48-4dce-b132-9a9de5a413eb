@@ -1,0 +1,10 @@
+services:
+  stereo-calib:
+    build: .
+    container_name: stereo-calib-demo
+    ports:
+      - "8000:8000"
+    volumes:
+      # 样例 JSON 同时挂到容器内 /samples，方便用 curl 直接上传试标
+      - ./samples:/samples:ro
+    restart: unless-stopped

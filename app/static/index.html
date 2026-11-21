@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>双目相机外参标定</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>双目相机外参标定</h1>
+    <p class="subtitle">左相机 → 右相机的旋转 R 与平移 T · 棋盘格角点排序自动判别</p>
+  </header>
+
+  <main>
+    <!-- 1. 上传 -->
+    <section class="card">
+      <h2>1. 上传标定数据（JSON）</h2>
+      <div class="row">
+        <input type="file" id="fileInput" accept=".json,application/json" />
+        <button id="loadSampleBtn" type="button">载入内置示例</button>
+        <span id="sessionInfo" class="muted"></span>
+      </div>
+      <details id="uploadedMeta" class="meta hidden">
+        <summary>已上传数据摘要</summary>
+        <pre id="metaJson"></pre>
+      </details>
+    </section>
+
+    <!-- 2. 参数与图对选择 -->
+    <section class="card hidden" id="configCard">
+      <h2>2. 选择图对与误差上限</h2>
+      <div class="row wrap">
+        <label>像素误差上限（RMSE，px）
+          <input type="number" id="thresholdInput" min="0.01" step="0.05" value="0.6" />
+        </label>
+        <span id="selectedCount" class="muted"></span>
+      </div>
+      <table id="pairTable">
+        <thead>
+          <tr>
+            <th>选用</th><th>图对 ID</th><th>角点数</th>
+            <th>左图范围 x/y</th><th>右图范围 x/y</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="hint">至少勾选 3 对（共 3～6 对）。右图角点列若为整体倒序/旋转，
+        后端会枚举棋盘格的 8 种对称排序逐一验证。</p>
+    </section>
+
+    <!-- 3. 执行 -->
+    <section class="card hidden" id="runCard">
+      <h2>3. 执行标定</h2>
+      <button id="runBtn" class="primary" type="button">计算外参</button>
+      <span id="runStatus" class="muted"></span>
+    </section>
+
+    <!-- 上次成功结果 -->
+    <section class="card hidden" id="lastSuccessCard">
+      <h2>本批上次成功结果（保留）</h2>
+      <p id="lastSuccessMeta" class="muted"></p>
+      <div id="lastSuccessBody"></div>
+    </section>
+
+    <!-- 本次结果 -->
+    <section class="card hidden" id="resultCard">
+      <h2>4. 本次标定结果</h2>
+      <div id="resultBody"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>FastAPI + OpenCV · 固定内参立体标定（CALIB_FIX_INTRINSIC）</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
